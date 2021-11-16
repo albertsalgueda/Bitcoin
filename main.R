@@ -1,47 +1,40 @@
 #THIS IS THE MAIN DECISION-MAKINNG STRATEGY: Should provide the predicted price 
 # + the % deviation between market price and prediction. 
-#API: -get_predicted_price() -get_deviation() -get_confidence() #based on probabilistic analysis
-  
+#API: -get_predicted_price() -get_deviation() -get_confidence() 
+#based on probabilistic analysiss
+
 #PREREQUISITES
+library(plumber)
 library(Rbitcoin)
-library(sys)
 library(readr)
 library( tidyverse )
 library (mosaic)
 library(ggformula)
 library(ggplot2)
-library( lubridate )
 library(prophet)
 library(tidymodels)
 library(modelr)
 library(lubridate)
-library(readxl)
 library(dplyr)
 library(zoo)
-library( remotes )
 library(NeuralNetTools)
 library( parsnipExtra )
-add_neuralnet_engine()
-
+library(rpart)
 #SCRIPT TO READ AND TRANSFORM HISTORICAL DATA
 
 df <- read_csv("Bitcoin Cleaned Data - Cleaned Data.csv", 
-                                              col_types = cols(Date = col_date(format = "%m/%d/%Y"), 
-                                                               `Market Price ($)` = col_number(), 
-                                                               `Av. Electricity Price ($/KWh)` = col_number(), 
-                                                               `Block Rewards (BTC)` = col_number(), 
-                                                               `Transaction Fees (USD)` = col_number(), 
-                                                               Difficulty = col_number(), `Hash rate TH/s` = col_number(), 
-                                                               `Efficency ( TH/kW)` = col_number(), 
-                                                               `Efficency ( J/TH )` = col_number(), 
-                                                               `Google Trends` = col_number(), `Unique Wallets` = col_number()))
+               col_types = cols(Date = col_date(format = "%m/%d/%Y"), 
+                                `Market Price ($)` = col_number(), 
+                                `Av. Electricity Price ($/KWh)` = col_number(), 
+                                `Block Rewards (BTC)` = col_number(), 
+                                `Transaction Fees (USD)` = col_number(), 
+                                Difficulty = col_number(), `Hash rate TH/s` = col_number(), 
+                                `Efficency ( TH/kW)` = col_number(), 
+                                `Efficency ( J/TH )` = col_number(), 
+                                `Google Trends` = col_number(), `Unique Wallets` = col_number()))
 View(df)
 
 
-df <- df%>% 
-  filter(year(Date)>2013) 
-df <- df %>% 
-  rename(df, `Market Price ($)` = MarketPrice )
 
 ###SCRIPT TO BUILD THE COST OF PRODUCTION 
 
@@ -69,7 +62,9 @@ df <- df %>%
 df <- df %>% 
   mutate(ProductionCost = total_cost/btc_day)
 
-
+df <- df %>% 
+  rename(Price=`Market Price ($)`) %>%
+  rename(Trends=`Google Trends`)
 #visualize results
 df %>% 
   filter(year(Date)>2012) %>% 
@@ -77,7 +72,7 @@ df %>%
   geom_line(color="#69b3a2") 
 #compute the ratio
 df <- df %>% 
-  mutate(ratio=ProductionCost/`Market Price ($)`)
+  mutate(ratio=ProductionCost/Price)
 #visualize results
 df %>% 
   filter(year(Date)>2012) %>% 
@@ -98,10 +93,6 @@ current_price <- current_price %>%
 merge(df,current_price) #error
 
 
-#TODO: build a model using a lag ( LEAD AND LAG) dplyr::
-
-
-
 #TODO: Create the simpliest_forecast ( done)
 
 
@@ -112,14 +103,17 @@ split <- initial_split( df, prop = 0.5 )
 dfTrain <- training( split )
 dfTest <- testing( split )
 
+df <- na.omit(df)
+df$network_hashrate
+
 the_recipe <-
   recipe( df ) %>%
-  update_role( 'Market Price ($)', new_role = "outcome" ) %>%
-  update_role( 'Av. Electricity Price ($/KWh)',new_role = 'predictor') 
+  update_role( Price, new_role = "outcome" ) %>%
+  update_role( Trends, new_role = 'predictor') #error when I add  derived metrics
 
-mdlNeural <- mlp( hidden_units = c(4,4,4) ) %>% #set up 3 layers of 4 nodes
-  set_engine("neuralnet") %>%
-  set_args( lifesign="full", threshold=1856987 ) %>% #the lower the threshold the better 
+mdlNeural <- mlp( hidden_units = c(10),epochs=2000) %>% 
+  set_engine("keras") %>%
+  set_args( lifesign="full", threshold=1) %>% #the lower the threshold the better 
   set_mode("regression")
 
 the_worklfow <-
@@ -127,19 +121,60 @@ the_worklfow <-
   add_recipe(the_recipe) %>% 
   add_model(mdlNeural)
 
-the_fit <- fit(the_worklfow,df)
-#error
+the_fit<-fit(the_worklfow,dfTrain)
 
-n <- neuralnet('Market Price ($)' ~ ProductionCost,df,hidden=1)
-#error
+#add predictions
+dfTrain <- dfTrain %>%
+  add_predictions( the_fit, var="predNeural1",type="numeric") 
+
+#asses the model
+metrics( dfTrain, Price, predNeural1 )
 
 
 #Tune the model
+library(keras)
+mdlNeural2 <- optimizer_rmsprop(
+  learning_rate = 0.001,
+  rho = 0.9,
+  epsilon = NULL,
+  decay = 0,
+  clipnorm = NULL,
+  clipvalue = NULL
+)
 
 
 
+#TRY ANOTHER MODEL
+
+the_recipe2 <-
+  recipe( df ) %>%
+  update_role( Price, new_role = "outcome" ) %>%
+  update_role( ProductionCost,new_role = 'predictor') %>% 
+  step_naomit(all_predictors())
+
+rf_defaults <- rand_forest(mode = "regression")
 
 
+the_worklfow2 <-
+  workflow() %>% 
+  add_recipe(the_recipe2) %>% 
+  add_model(rf_defaults)
 
+the_fit2<-fit(the_worklfow2,dfTrain)
 
+dfTrain <- dfTrain %>%
+  add_predictions( the_fit2, var="predForest",type="numeric") %>% 
+  mutate(forest = predForest$pred_numeric,forest=NULL )
+    
 
+library(tsibble) # Tidy Temporal Data Frames and Tools
+library(feasts) # Feature Extraction and Statistics for Time Series
+library(tsibbledata) # Diverse Datasets for 'tsibble'
+
+df %>% glimpse()
+
+df1 <-  df %>%
+  filter(year(Date) == 2014) %>%
+  mutate(Price = scale(Price), ProductionCost = scale(ProductionCost)) %>%
+  pivot_longer(-Date, names_to = "variable")
+x

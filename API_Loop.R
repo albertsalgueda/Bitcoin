@@ -2,7 +2,7 @@ library(Rbitcoin)
 
 df_1 <-current_price1
 
-for(i in 1:100){
+while (TRUE){
   current_price1= market.api.process('bitstamp',c('BTC','USD'),'ticker')
   Sys.sleep(10)
   current_price1 = subset(current_price1,select=c("timestamp","last"))
@@ -13,13 +13,20 @@ for(i in 1:100){
   #Model2 <- prophet(df_1)
   #Future2 <- make_future_dataframe(Model2,periods = 1)
   #forecast2 <- predict(Model1,Future2)
-  #dyplot.prophet(Model2,forecast2)
+  #print(dyplot.prophet(Model2,forecast2))
   #tail(forecast1)
-  print(ggplot(df_1, aes(x=ds, y=y) +
-    geom_line(color="#69b3a2"))) 
+  #mdlNeural1 <- mlp( hidden_units = 10 ) %>% 
+  #  set_engine("nnet")%>%
+  #  set_mode("regression")
+  #wflowNeural1 <-
+  #  workflow()%>%
+  #  add_model(mdlNeural1)%>% 
+  #  add_recipe(recTemp)
+  print(ggplot(df_1, aes(x=ds, y=y))+geom_line(color="#69b3a2")) 
 }
 df_1 %>% 
   ggplot( aes(x=ds, y=y)) +
   geom_line(color="#69b3a2") 
+print(ggplot(df_1, aes(x=ds, y=y))+geom_line(color="#69b3a2")) 
 dyplot.prophet(Model2,forecast2)
 view(df_1)

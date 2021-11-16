@@ -12,12 +12,12 @@ market_price$y <- as.numeric(market_price$y)
 
 #Update and transform data using the API
 #while (TRUE) {
-current_price= market.api.process('bitstamp',c('BTC','USD'),'ticker')
-current_price = subset(current_price,select=c("timestamp","last"))
-current_price$timestamp <- format(as.Date(current_price$timestamp), "%Y-%m-%d")
-current_price <- current_price %>% 
-  rename(ds=timestamp,y=last)
-current_price$y=as.numeric(current_price$y)
+  current_price= market.api.process('bitstamp',c('BTC','USD'),'ticker')
+  current_price = subset(current_price,select=c("timestamp","last"))
+  current_price$timestamp <- format(as.Date(current_price$timestamp), "%Y-%m-%d")
+  current_price <- current_price %>% 
+    rename(ds=timestamp,y=last)
+  current_price$y=as.numeric(current_price$y)
 #}
 
 #merge ( i did it all... but still does not merge properly)
@@ -43,17 +43,17 @@ ratio2 = forecast1$yhat/market_price$y
 ##API ANSWER
 #test the API with this simple forecast
 save(Model1,file="prophet.RData")
-saveRDS(Model1, "model.rds")
 
 #LAGGED PREDICTION FROM PRICE OF PRODUCTION
 
-df1 <- market_price
+df1 <- df
 df1 <- df1 %>%
   mutate( ProductionLag = lag( "ProductionCost", 30 ), TrendsLagged = lag("Google Trends", 30) )
+
 view(df1)
-rec <-
-  recipe(df1) %>% 
-  update_role()
+
+
+
 
 
 
