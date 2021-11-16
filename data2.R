@@ -23,7 +23,7 @@ rec1<-
   step_zv(all_predictors())
 
 mdlNeural <- mlp( hidden_units = c(4,4,4) ) %>% #set up 3 layers of 4 nodes
-  set_engine("neuralnet") %>%
+  set_engine("nnet") %>%
   set_args( lifesign="full", threshold=1856987 ) %>% #the lower the threshold the better 
   set_mode("regression")
 
