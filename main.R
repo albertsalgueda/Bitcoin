@@ -95,7 +95,34 @@ merge(df,current_price) #error
 
 #TODO: Create the simpliest_forecast ( done)
 
+#CREATE A RNN TO PREDICT BTC PRODUCTION PRICE
 
+
+library( rnn )
+df <- df %>% 
+  filter(year(Date)>2014) 
+
+view(df)
+
+Xb <- int2bin( df$ProductionCost, length=16 )
+
+Y <- int2bin( df$Price, length=16 )
+
+X <- array( Xb, dim=c(dim(Xb),1) )
+
+modelRnn <- trainr(Y=Y, X=X,
+                   learningrate = 0.05, #how much the model changes, how quickly can lear
+                   hidden_dim = 20, #dimensions or hidden layers
+                   numepochs = 500 )
+
+
+
+
+
+
+
+##ALL APPROACHES BELOW ARE INCORRECT
+""
 #DOING:
 # neural network prediction ( error when fitting)
 set.seed( 28 )
@@ -165,7 +192,7 @@ the_fit2<-fit(the_worklfow2,dfTrain)
 dfTrain <- dfTrain %>%
   add_predictions( the_fit2, var="predForest",type="numeric") %>% 
   mutate(forest = predForest$pred_numeric,forest=NULL )
-    
+
 
 library(tsibble) # Tidy Temporal Data Frames and Tools
 library(feasts) # Feature Extraction and Statistics for Time Series
@@ -177,4 +204,3 @@ df1 <-  df %>%
   filter(year(Date) == 2014) %>%
   mutate(Price = scale(Price), ProductionCost = scale(ProductionCost)) %>%
   pivot_longer(-Date, names_to = "variable")
-x
