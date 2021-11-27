@@ -119,6 +119,7 @@ dfRnnErrors <- data.frame(
   epoch=1:ncol(modelRnn$error), 
   errors=colMeans(modelRnn$error) )
 
+#visualize the errors
 gf_line( dfRnnErrors, errors ~ epoch )
 
 #add predictions
@@ -126,6 +127,9 @@ df$predRnnB <- predictr( modelRnn, X )
 
 #convert to integer
 df$predRnn <- bin2int( df$predRnnB )
+
+#visualize the predictions
+gf_line( df, predRnn ~ Date )
 
 #calculate the error
 df$ErrorRnn <- df$predRnn - df$nextClose
