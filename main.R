@@ -115,13 +115,39 @@ modelRnn <- trainr(Y=Y, X=X,
                    hidden_dim = 20, #dimensions or hidden layers
                    numepochs = 500 )
 
+dfRnnErrors <- data.frame(
+  epoch=1:ncol(modelRnn$error), 
+  errors=colMeans(modelRnn$error) )
+
+gf_line( dfRnnErrors, errors ~ epoch )
+
+#add predictions
+df$predRnnB <- predictr( modelRnn, X )
+
+#convert to integer
+df$predRnn <- bin2int( df$predRnnB )
+
+#calculate the error
+df$ErrorRnn <- df$predRnn - df$nextClose
+
+#asses the model
+metrics( df, nextClose, predRnn )
+metrics( tail( df, 10), nextClose, predRnn )
+summary( df$ErrorRnn )
+
+gf_point( df, predRnn~Date, color = "blue" )
 
 
 
 
 
 
-##ALL APPROACHES BELOW ARE INCORRECT
+
+
+
+
+
+##ALL APPROACHES BELOW ARE 4 EXPERIMENTAL PURPOSES ONLY
 ""
 #DOING:
 # neural network prediction ( error when fitting)
