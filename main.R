@@ -135,15 +135,18 @@ gf_line( df, predRnn ~ Date )
 df$ErrorRnn <- df$predRnn - df$nextClose
 
 #asses the model
-metrics( df, nextClose, predRnn )
-metrics( tail( df, 10), nextClose, predRnn )
-summary( df$ErrorRnn )
+metrics( df, Price, predRnn )
 
 gf_point( df, predRnn~Date, color = "blue" )
 
 
+#visualize precition moving average 
 
+df <- df %>% 
+  dplyr::mutate(predRnnnCleaned = zoo::rollmean(predRnn, k = 90, fill = NA))
 
+#visualize the predictions
+gf_line( df, predRnnnCleaned ~ Date )
 
 
 
