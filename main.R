@@ -72,7 +72,7 @@ df %>%
   geom_line(color="#69b3a2") 
 #compute the ratio
 df <- df %>% 
-  mutate(ratio=ProductionCost/Price)
+  mutate(ratio=Price/ProductionCost)
 #visualize results
 df %>% 
   filter(year(Date)>2012) %>% 
@@ -148,10 +148,15 @@ df <- df %>%
 #visualize the predictions
 gf_line( df, predRnnnCleaned ~ Date )
 
+gf_line( df, Trends~ Date )
+gf_line( df, ratio~ Date )
 
 
+theme_set(theme_minimal())
 
-
+ggplot(df, aes(x=Date)) + 
+  geom_line(aes(y = Price), color = "darkred") + 
+  geom_line(aes(y = predRnnnCleaned), color="steelblue", linetype="twodash") 
 
 
 ##ALL APPROACHES BELOW ARE 4 EXPERIMENTAL PURPOSES ONLY

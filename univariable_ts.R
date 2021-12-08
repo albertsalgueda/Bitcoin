@@ -43,13 +43,6 @@ ratio2 = forecast1$yhat/market_price$y
 #test the API with this simple forecast
 save(Model1,file="prophet.RData")
 
-#LAGGED PREDICTION FROM PRICE OF PRODUCTION
-
-df1 <- df
-df1 <- df1 %>%
-  mutate( ProductionLag = lag( "ProductionCost", 30 ), TrendsLagged = lag("Google Trends", 30) )
-
-view(df1)
 
 
 
