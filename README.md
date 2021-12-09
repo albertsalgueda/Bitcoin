@@ -1,4 +1,4 @@
-# Bitcoin AI-Strategy Project
+# Bitcoin AI Prediction
 
 -Creation of Bitcoin Cost of Production and a ratio to compare it to its market price. ( main.R)
 
