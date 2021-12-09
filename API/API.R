@@ -5,12 +5,6 @@ library(plumber)
 
 #* @apiTitle Bitcoin Prediction
 #* @apiDescription AI-based prediction using neural networks
-#* Get the sum of 2 numbers
-#* @post /sum
-function(x,y){
-  as.numeric(x)+as.numeric(y)
-}
-
 #* Insert the number of days you want to get the prediction
 #* @get /model
 function(x){

@@ -155,8 +155,11 @@ gf_line( df, ratio~ Date )
 theme_set(theme_minimal())
 
 ggplot(df, aes(x=Date)) + 
-  geom_line(aes(y = Price), color = "darkred") + 
-  geom_line(aes(y = predRnnnCleaned), color="steelblue", linetype="twodash") 
+  geom_line(aes(y = predRnnnCleaned), color = "darkred") + 
+  geom_line(aes(y = Price), color="steelblue", linetype="twodash") 
+
+
+
 
 
 ##ALL APPROACHES BELOW ARE 4 EXPERIMENTAL PURPOSES ONLY
